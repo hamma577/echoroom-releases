@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Echo Room — Debate. Score. Evolve.</title>
+<meta name="description" content="The AI-powered debate app that scores your open-mindedness.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --p:#8B5CF6;--p2:#6D28D9;--p3:#A78BFA;
+  --bg:#060810;--surface:#0D1220;--card:#121826;
+  --border:#1C2538;--text:#F1F5F9;--muted:#94A3B8;--dim:#475569;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow-x:hidden;}
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+nav,section,footer,.phone-section{position:relative;z-index:2;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,8,16,0.7);backdrop-filter:blur(16px);border-bottom:1px solid rgba(139,92,246,.15);padding:0 5%;}
+.nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;height:62px;gap:32px;}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-icon{width:36px;height:36px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.5);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:var(--p);}
+.logo-text{font-size:15px;font-weight:800;letter-spacing:3px;color:var(--text);}
+.nav-links{display:flex;gap:28px;margin-left:auto;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .2s;}
+.nav-links a:hover{color:var(--p3);}
+.nav-cta{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 0 20px rgba(139,92,246,.3);}
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 5% 80px;}
+.hero-inner{max-width:780px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.3);border-radius:24px;padding:6px 16px;font-size:12px;color:var(--p3);font-weight:600;letter-spacing:.5px;margin-bottom:28px;animation:fadeUp .8s ease both;}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--p);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.4);}}
+.hero h1{font-size:clamp(48px,8vw,88px);font-weight:900;line-height:1.0;letter-spacing:-3px;margin-bottom:24px;animation:fadeUp .8s .1s ease both;}
+.hero h1 .line1{display:block;color:var(--text);}
+.hero h1 .line2{display:block;background:linear-gradient(135deg,var(--p),#C084FC,var(--p3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero h1 .line3{display:block;color:var(--text);}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:var(--muted);max-width:520px;margin:0 auto 44px;line-height:1.75;animation:fadeUp .8s .2s ease both;}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:72px;animation:fadeUp .8s .3s ease both;}
+.btn-primary{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;padding:15px 30px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,box-shadow .2s;box-shadow:0 0 30px rgba(139,92,246,.35);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(139,92,246,.5);}
+.btn-secondary{background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.25);color:var(--text);padding:15px 30px;border-radius:12px;font-size:15px;font-weight:600;text-decoration:none;transition:background .2s;}
+.btn-secondary:hover{background:rgba(139,92,246,.08);}
+.hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;animation:fadeUp .8s .4s ease both;}
+.stat-num{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--p3),#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.stat-label{font-size:12px;color:var(--dim);margin-top:3px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.phone-section{padding:20px 5% 80px;display:flex;justify-content:center;}
+.phone{width:265px;background:rgba(18,24,38,.9);border:1px solid rgba(139,92,246,.25);border-radius:38px;padding:12px;overflow:hidden;box-shadow:0 0 60px rgba(139,92,246,.15),0 0 120px rgba(139,92,246,.05);}
+.phone-screen{background:var(--surface);border-radius:28px;overflow:hidden;}
+.phone-top{background:var(--bg);padding:16px 16px 12px;border-bottom:1px solid var(--border);}
+.phone-coins{font-size:11px;color:var(--p);background:rgba(139,92,246,.1);padding:3px 8px;border-radius:10px;float:right;}
+.phone-post{background:var(--card);margin:10px;border-radius:12px;padding:12px;border:1px solid var(--border);}
+.phone-av{width:26px;height:26px;border-radius:50%;background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--p);}
+.bar-track{flex:1;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;}
+.section{padding:90px 5%;}
+.section-inner{max-width:1100px;margin:0 auto;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:3px;color:var(--p);text-transform:uppercase;margin-bottom:14px;}
+.section-title{font-size:clamp(28px,4vw,46px);font-weight:900;line-height:1.15;letter-spacing:-1.5px;margin-bottom:16px;}
+.section-sub{font-size:16px;color:var(--muted);max-width:500px;line-height:1.7;margin-bottom:52px;}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
+.feature-card{background:rgba(18,24,38,.6);border:1px solid rgba(28,37,56,.8);border-radius:18px;padding:26px;transition:border-color .3s,transform .3s,box-shadow .3s;backdrop-filter:blur(8px);}
+.feature-card:hover{border-color:rgba(139,92,246,.4);transform:translateY(-3px);box-shadow:0 0 30px rgba(139,92,246,.1);}
+.feature-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;}
+.feature-title{font-size:15px;font-weight:700;margin-bottom:8px;}
+.feature-desc{font-size:13px;color:var(--muted);line-height:1.65;}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;margin-top:52px;}
+.step{text-align:center;padding:28px 20px;}
+.step-num{width:52px;height:52px;border-radius:50%;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.35);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:var(--p);margin:0 auto 18px;box-shadow:0 0 20px rgba(139,92,246,.15);}
+.step-title{font-size:16px;font-weight:700;margin-bottom:10px;}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.65;}
+.score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:44px;}
+.score-card{background:rgba(18,24,38,.6);border:1px solid rgba(28,37,56,.8);border-radius:16px;padding:22px;backdrop-filter:blur(8px);transition:border-color .3s;}
+.score-card:hover{border-color:rgba(139,92,246,.35);}
+.score-card-pts{font-size:11px;color:var(--p);font-weight:700;margin-top:10px;}
+.ranks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:44px;}
+.rank-card{background:rgba(18,24,38,.6);border:1px solid rgba(28,37,56,.8);border-radius:16px;padding:22px;text-align:center;backdrop-filter:blur(8px);transition:border-color .3s,transform .3s;}
+.rank-card:hover{transform:translateY(-3px);}
+.testimonials{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;margin-top:44px;}
+.tcard{background:rgba(18,24,38,.6);border:1px solid rgba(28,37,56,.8);border-radius:18px;padding:26px;backdrop-filter:blur(8px);}
+.tcard-text{font-size:14px;color:#CBD5E1;line-height:1.75;margin-bottom:18px;font-style:italic;}
+.tcard-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.plus-card{background:rgba(18,24,38,.7);border:1px solid rgba(139,92,246,.3);border-radius:22px;padding:44px;max-width:720px;margin:44px auto 0;text-align:center;backdrop-filter:blur(12px);box-shadow:0 0 60px rgba(139,92,246,.1);}
+.plus-price{font-size:60px;font-weight:900;background:linear-gradient(135deg,var(--p),#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+.plus-features{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:32px 0;text-align:left;}
+.plus-feat{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);}
+.plus-feat-dot{width:6px;height:6px;border-radius:50%;background:var(--p);flex-shrink:0;}
+.cta-section{padding:110px 5%;text-align:center;}
+.cta-title{font-size:clamp(36px,6vw,64px);font-weight:900;letter-spacing:-2px;margin-bottom:18px;line-height:1.1;}
+.cta-title span{background:linear-gradient(135deg,var(--p),#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.dl-btn{display:flex;align-items:center;gap:14px;background:rgba(18,24,38,.8);border:1px solid rgba(139,92,246,.2);border-radius:16px;padding:16px 24px;text-decoration:none;transition:border-color .2s,transform .2s,box-shadow .2s;min-width:190px;backdrop-filter:blur(8px);}
+.dl-btn:hover{border-color:rgba(139,92,246,.5);transform:translateY(-2px);box-shadow:0 0 30px rgba(139,92,246,.15);}
+.section-dark{background:rgba(13,18,32,.4);}
+footer{background:rgba(6,8,16,.9);border-top:1px solid rgba(28,37,56,.8);padding:44px 5%;backdrop-filter:blur(16px);}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+.footer-links a{color:var(--dim);text-decoration:none;font-size:13px;margin-left:24px;transition:color .2s;}
+.footer-links a:hover{color:var(--p3);}
+@media(max-width:640px){
+  .nav-links{display:none;}
+  .plus-features{grid-template-columns:1fr;}
+  .footer-inner{flex-direction:column;text-align:center;}
+  .footer-links a{margin:0 12px;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="#">
+      <div class="logo-icon">E</div>
+      <span class="logo-text">ECHO ROOM</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#ranks">Ranks</a>
+      <a href="#plus">Plus</a>
+    </div>
+    <a class="nav-cta" href="#download">Download free</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>AI-Powered Debate App — Free to Download</div>
+    <h1>
+      <span class="line1">Debate.</span>
+      <span class="line2">Score.</span>
+      <span class="line3">Evolve.</span>
+    </h1>
+    <p class="hero-sub">State your opinion. Get challenged by AI. Earn your Open Mind Score. The app that actually rewards you for listening.</p>
+    <div class="hero-btns">
+      <a class="btn-primary" href="#download">&#8681;&nbsp; Download for Android</a>
+      <a class="btn-secondary" href="#how">See how it works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num counting" data-target="12">0</div><div class="stat-label">debate topics</div></div>
+      <div class="stat"><div class="stat-num counting" data-target="50">0</div><div class="stat-label">max score</div></div>
+      <div class="stat"><div class="stat-num counting" data-target="5">0</div><div class="stat-label">rank tiers</div></div>
+      <div class="stat"><div class="stat-num">&#8734;</div><div class="stat-label">opinions to explore</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="phone-section">
+  <div style="box-shadow:0 0 80px rgba(139,92,246,.2),0 0 160px rgba(139,92,246,.06);border-radius:38px;">
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="phone-top">
+          <span style="font-size:13px;font-weight:800;letter-spacing:2px;">ECHO ROOM</span>
+          <span class="phone-coins">&#127994; 145</span>
+          <div style="clear:both;"></div>
+        </div>
+        <div style="padding:8px;">
+          <div class="phone-post">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <div class="phone-av">AR</div>
+              <div>
+                <div style="font-size:11px;font-weight:600;">@amir.r</div>
+                <div style="font-size:9px;color:var(--dim);">technology &middot; against</div>
+              </div>
+              <div style="margin-left:auto;background:rgba(239,68,68,.1);border-radius:6px;padding:2px 6px;font-size:8px;color:#EF4444;font-weight:700;">AGAINST</div>
+            </div>
+            <div style="font-size:10px;color:#CBD5E1;line-height:1.55;margin-bottom:9px;">"AI will never replace human creativity. Machines imitate but cannot truly feel or innovate from nothing."</div>
+            <div style="background:rgba(139,92,246,.1);border-radius:10px;padding:10px;border:1px solid rgba(139,92,246,.2);">
+              <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
+                <span style="font-size:22px;font-weight:900;color:var(--p);">38</span>
+                <span style="font-size:9px;color:var(--muted);">/50 Open Mind Score</span>
+                <span style="font-size:10px;color:#F59E0B;margin-left:auto;">+5 &#127994;</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:8px;color:var(--dim);width:42px;">Quality</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:#8B5CF6;"></div></div></div>
+                <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:8px;color:var(--dim);width:42px;">Empathy</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#14B8A6;"></div></div></div>
+                <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:8px;color:var(--dim);width:42px;">Logic</span><div class="bar-track"><div class="bar-fill" style="width:88%;background:#8B5CF6;"></div></div></div>
+                <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:8px;color:var(--dim);width:42px;">Openness</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:#22C55E;"></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section" id="features">
+  <div class="section-inner">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything a debater needs</h2>
+    <p class="section-sub">Built for people who love opinions, hate echo chambers, and want to grow.</p>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon" style="background:rgba(139,92,246,.12);">&#129504;</div><div class="feature-title">AI Open Mind Score</div><div class="feature-desc">Submit your response to any opinion. Our AI scores you on quality, empathy, logic and openness — then gives honest feedback.</div></div>
+      <div class="feature-card"><div class="feature-icon" style="background:rgba(20,184,166,.12);">&#127981;</div><div class="feature-title">Live debate rooms</div><div class="feature-desc">Join public or private rooms with a code. AI moderates every message and rewards the best arguments with Echo Coins.</div></div>
+      <div class="feature-card"><div class="feature-icon" style="background:rgba(249,115,22,.12);">&#9876;&#65039;</div><div class="feature-title">1v1 Battles</div><div class="feature-desc">Challenge anyone to a 10-round debate. AI judges every round. Highest total score wins 100 Echo Coins.</div></div>
+      <div class="feature-card"><div class="feature-icon" style="background:rgba(34,197,94,.12);">&#129516;</div><div class="feature-title">Mind DNA report</div><div class="feature-desc">After 5 engagements unlock your debate personality — The Strategist, Peacemaker, Analyst, or Explorer.</div></div>
+      <div class="feature-card"><div class="feature-icon" style="background:rgba(139,92,246,.12);">&#127995;</div><div class="feature-title">Echo Coins economy</div><div class="feature-desc">Earn coins for every engagement, post, and daily streak. Spend them on badges, frames, and profile upgrades.</div></div>
+      <div class="feature-card"><div class="feature-icon" style="background:rgba(20,184,166,.12);">&#127963;&#65039;</div><div class="feature-title">Echo Parliament</div><div class="feature-desc">Vote on real-world questions monthly. See how the world is divided — earn 15 coins for every vote cast.</div></div>
+      <div class="feature-card"><div class="feature-icon" style="background:rgba(249,115,22,.12);">&#127775;</div><div class="feature-title">Daily streaks</div><div class="feature-desc">Keep your debate streak alive. Earn streak shields and bonus coins for showing up every day.</div></div>
+      <div class="feature-card"><div class="feature-icon" style="background:rgba(34,197,94,.12);">&#128161;</div><div class="feature-title">Random facts</div><div class="feature-desc">105+ curated facts across 7 categories — Society, Nature, Politics, Science, History, Technology, and Art.</div></div>
+      <div class="feature-card"><div class="feature-icon" style="background:rgba(139,92,246,.12);">&#128280;</div><div class="feature-title">Private chat</div><div class="feature-desc">Add friends after engaging with their posts. Send direct messages and continue debates privately.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-dark" id="how">
+  <div class="section-inner">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Three steps to a higher mind</h2>
+    <p class="section-sub">It takes 2 minutes to get your first score. A lifetime to master it.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-title">State your opinion</div><div class="step-desc">Browse the feed, find an opinion you agree or disagree with, and write your honest response. No filters. No fake positivity.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-title">Get scored by AI</div><div class="step-desc">Our AI judges your response across 5 dimensions and gives you a score out of 50. Honest, immediate, and surprisingly accurate.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-title">Climb the ranks</div><div class="step-desc">Every engagement builds your total score. Rise from Echo Chamber to Enlightened. Earn coins, unlock DNA, compete on the leaderboard.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="section-label">Scoring</div>
+    <h2 class="section-title">What your score actually measures</h2>
+    <p class="section-sub">Not who shouts loudest. Not who has the "right" opinion. Who actually thinks.</p>
+    <div class="score-grid">
+      <div class="score-card"><div style="font-size:24px;margin-bottom:10px;">&#128172;</div><div style="font-size:14px;font-weight:700;margin-bottom:6px;">Quality</div><div style="font-size:12px;color:var(--muted);line-height:1.55;">How well-constructed is your argument? Clarity, depth, and evidence all count.</div><div class="score-card-pts">0–10 points</div></div>
+      <div class="score-card"><div style="font-size:24px;margin-bottom:10px;">&#10084;&#65039;</div><div style="font-size:14px;font-weight:700;margin-bottom:6px;">Empathy</div><div style="font-size:12px;color:var(--muted);line-height:1.55;">Do you acknowledge the other perspective? Can you feel why someone believes what they believe?</div><div class="score-card-pts">0–10 points</div></div>
+      <div class="score-card"><div style="font-size:24px;margin-bottom:10px;">&#128200;</div><div style="font-size:14px;font-weight:700;margin-bottom:6px;">Logic</div><div style="font-size:12px;color:var(--muted);line-height:1.55;">Is your reasoning sound? Do your conclusions actually follow from your premises?</div><div class="score-card-pts">0–10 points</div></div>
+      <div class="score-card"><div style="font-size:24px;margin-bottom:10px;">&#129522;</div><div style="font-size:14px;font-weight:700;margin-bottom:6px;">Openness</div><div style="font-size:12px;color:var(--muted);line-height:1.55;">Are you willing to be wrong? Do you engage with the strongest version of the opposing view?</div><div class="score-card-pts">0–10 points</div></div>
+      <div class="score-card"><div style="font-size:24px;margin-bottom:10px;">&#129504;</div><div style="font-size:14px;font-weight:700;margin-bottom:6px;">Mind shift</div><div style="font-size:12px;color:var(--muted);line-height:1.55;">Did you genuinely consider changing your view? The rarest and most valued dimension.</div><div class="score-card-pts">0–10 points</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-dark" id="ranks">
+  <div class="section-inner">
+    <div class="section-label">Ranks</div>
+    <h2 class="section-title">Where do you stand?</h2>
+    <p class="section-sub">Your rank reflects the depth of your thinking, not the strength of your opinions.</p>
+    <div class="ranks-grid">
+      <div class="rank-card"><div style="font-size:30px;margin-bottom:12px;">&#128308;</div><div style="font-size:15px;font-weight:700;margin-bottom:5px;">Echo Chamber</div><div style="font-size:12px;color:var(--dim);">Starting rank</div></div>
+      <div class="rank-card"><div style="font-size:30px;margin-bottom:12px;">&#128992;</div><div style="font-size:15px;font-weight:700;margin-bottom:5px;">Awakening</div><div style="font-size:12px;color:var(--dim);">50+ points</div></div>
+      <div class="rank-card"><div style="font-size:30px;margin-bottom:12px;">&#128993;</div><div style="font-size:15px;font-weight:700;margin-bottom:5px;">Curious</div><div style="font-size:12px;color:var(--dim);">150+ points</div></div>
+      <div class="rank-card"><div style="font-size:30px;margin-bottom:12px;">&#128994;</div><div style="font-size:15px;font-weight:700;margin-bottom:5px;">Open Mind</div><div style="font-size:12px;color:var(--dim);">300+ points</div></div>
+      <div class="rank-card" style="border-color:rgba(139,92,246,.4);box-shadow:0 0 20px rgba(139,92,246,.1);"><div style="font-size:30px;margin-bottom:12px;">&#128995;</div><div style="font-size:15px;font-weight:700;margin-bottom:5px;color:var(--p3);">Enlightened</div><div style="font-size:12px;color:var(--dim);">500+ points</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="section-label">Community</div>
+    <h2 class="section-title">What people are saying</h2>
+    <div class="testimonials">
+      <div class="tcard"><div class="tcard-text">"I argued that remote work kills ambition. The AI gave me 29/50 and said I wasn't acknowledging the mental health benefits. It was right. That stung."</div><div style="display:flex;align-items:center;gap:10px;"><div class="tcard-av" style="background:rgba(139,92,246,.15);color:#A78BFA;">KA</div><div><div style="font-size:13px;font-weight:600;">@k.ali</div><div style="font-size:11px;color:var(--dim);">Open Mind &middot; 312 pts</div></div></div></div>
+      <div class="tcard"><div class="tcard-text">"Finally an app that doesn't just show me people who agree with me. The debate rooms are addictive. I've been on it for 3 hours today."</div><div style="display:flex;align-items:center;gap:10px;"><div class="tcard-av" style="background:rgba(20,184,166,.15);color:#14B8A6;">SL</div><div><div style="font-size:13px;font-weight:600;">@sara.l</div><div style="font-size:11px;color:var(--dim);">Curious &middot; 178 pts</div></div></div></div>
+      <div class="tcard"><div class="tcard-text">"My Mind DNA said I'm 'The Strategist'. My friends laughed because apparently I always argue with precision and zero emotion. The AI knows me better than I do."</div><div style="display:flex;align-items:center;gap:10px;"><div class="tcard-av" style="background:rgba(249,115,22,.15);color:#F97316;">MH</div><div><div style="font-size:13px;font-weight:600;">@m.hassan</div><div style="font-size:11px;color:var(--dim);">Enlightened &middot; 541 pts</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-dark" id="plus">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label">Echo Room Plus</div>
+    <h2 class="section-title">Go unlimited</h2>
+    <p class="section-sub" style="margin:0 auto 0;">For serious debaters who want everything.</p>
+    <div class="plus-card">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:24px;padding:5px 16px;font-size:11px;color:var(--p3);font-weight:700;letter-spacing:1px;margin-bottom:22px;">MOST POPULAR</div>
+      <div><span class="plus-price">$7</span><span style="font-size:18px;color:var(--muted);"> / month</span></div>
+      <div style="font-size:13px;color:var(--dim);margin-top:6px;">or $59/year — save 30%</div>
+      <div class="plus-features">
+        <div class="plus-feat"><div class="plus-feat-dot"></div>Unlimited daily engagements</div>
+        <div class="plus-feat"><div class="plus-feat-dot"></div>Unlimited private rooms</div>
+        <div class="plus-feat"><div class="plus-feat-dot"></div>All 16 market items unlocked</div>
+        <div class="plus-feat"><div class="plus-feat-dot"></div>Verified Plus badge</div>
+        <div class="plus-feat"><div class="plus-feat-dot"></div>Full AI score breakdown</div>
+        <div class="plus-feat"><div class="plus-feat-dot"></div>Score history &amp; analytics</div>
+        <div class="plus-feat"><div class="plus-feat-dot"></div>Weekly AI personality report</div>
+        <div class="plus-feat"><div class="plus-feat-dot"></div>500 Echo Coins on signup</div>
+      </div>
+      <a class="btn-primary" href="#download" style="display:inline-flex;margin-top:8px;">Get Plus — free trial</a>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="download">
+  <h2 class="cta-title">Ready to expand<br><span>your mind?</span></h2>
+  <p style="font-size:18px;color:var(--muted);margin-bottom:44px;">Free to download. Free to start. Your first score is waiting.</p>
+  <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;">
+    <a class="dl-btn" href="https://get-echo-room.netlify.app/echoroom.apk" download="EchoRoom.apk">
+      <span style="font-size:30px;">&#128241;</span>
+      <div>
+        <span style="font-size:10px;color:var(--dim);display:block;">Download for</span>
+        <span style="font-size:16px;font-weight:700;display:block;">Android APK</span>
+      </div>
+    </a>
+    <a class="dl-btn" href="#" style="opacity:.45;pointer-events:none;">
+      <span style="font-size:30px;">&#63743;</span>
+      <div>
+        <span style="font-size:10px;color:var(--dim);display:block;">Coming soon</span>
+        <span style="font-size:16px;font-weight:700;display:block;">iOS App Store</span>
+      </div>
+    </a>
+  </div>
+  <p style="margin-top:22px;font-size:12px;color:var(--dim);">Android 8.0+ &middot; Free &middot; No ads &middot; No data sold</p>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div style="font-size:14px;font-weight:800;letter-spacing:2px;">ECHO ROOM</div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#plus">Plus</a>
+      <a href="mailto:support@echoroom.app">Contact</a>
+    </div>
+    <div style="font-size:12px;color:var(--dim);">&copy; 2026 Echo Room. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+window.addEventListener('DOMContentLoaded',function(){
+  var canvas=document.getElementById('bg-canvas');
+  var ctx=canvas.getContext('2d');
+  var W,H,nodes=[],mouse={x:-999,y:-999};
+  var NODE_COUNT=80,MAX_DIST=160;
+  var COLORS=['rgba(139,92,246,','rgba(167,139,250,','rgba(192,132,252,','rgba(109,40,217,'];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+  function createNodes(){
+    nodes=[];
+    for(var i=0;i<NODE_COUNT;i++){
+      nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*2+1,c:COLORS[Math.floor(Math.random()*COLORS.length)],pulse:Math.random()*Math.PI*2});
+    }
+  }
+  function drawFrame(){
+    ctx.clearRect(0,0,W,H);
+    var grd=ctx.createRadialGradient(W*.5,0,0,W*.5,0,H*.6);
+    grd.addColorStop(0,'rgba(139,92,246,0.04)');grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
+    var now=Date.now()*.001;
+    for(var i=0;i<nodes.length;i++){
+      var n=nodes[i];
+      n.x+=n.vx;n.y+=n.vy;
+      if(n.x<-10)n.x=W+10;if(n.x>W+10)n.x=-10;
+      if(n.y<-10)n.y=H+10;if(n.y>H+10)n.y=-10;
+      var mx=n.x-mouse.x,my=n.y-mouse.y,md=Math.sqrt(mx*mx+my*my);
+      if(md<120){var force=(120-md)/120*.8;n.vx+=(mx/md)*force*.05;n.vy+=(my/md)*force*.05;}
+      var spd=Math.sqrt(n.vx*n.vx+n.vy*n.vy);if(spd>1.2){n.vx*=.98;n.vy*=.98;}
+      for(var j=i+1;j<nodes.length;j++){
+        var o=nodes[j],dx=n.x-o.x,dy=n.y-o.y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<MAX_DIST){var alpha=(1-d/MAX_DIST)*.18;ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(o.x,o.y);ctx.strokeStyle=n.c+alpha+')';ctx.lineWidth=(1-d/MAX_DIST)*.8;ctx.stroke();}
+      }
+      var dx2=n.x-mouse.x,dy2=n.y-mouse.y,d2=Math.sqrt(dx2*dx2+dy2*dy2);
+      if(d2<200){ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(mouse.x,mouse.y);ctx.strokeStyle='rgba(167,139,250,'+(1-d2/200)*.35+')';ctx.lineWidth=.8;ctx.stroke();}
+      n.pulse+=.02;var pr=n.r+Math.sin(n.pulse)*.5;
+      ctx.beginPath();ctx.arc(n.x,n.y,pr,0,Math.PI*2);ctx.fillStyle=n.c+'0.7)';ctx.fill();
+      if(n.r>2.2){ctx.beginPath();ctx.arc(n.x,n.y,pr+3,0,Math.PI*2);ctx.strokeStyle=n.c+'0.15)';ctx.lineWidth=1;ctx.stroke();}
+    }
+    var cx=W*.5,cy=H*.32;
+    for(var r=0;r<4;r++){var radius=80+r*90+Math.sin(now*.3+r)*8,a=0.025-r*.005;ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.strokeStyle='rgba(139,92,246,'+a+')';ctx.lineWidth=1;ctx.stroke();}
+    requestAnimationFrame(drawFrame);
+  }
+  window.addEventListener('resize',function(){resize();createNodes();});
+  window.addEventListener('mousemove',function(e){mouse.x=e.clientX;mouse.y=e.clientY;});
+  window.addEventListener('touchmove',function(e){if(e.touches[0]){mouse.x=e.touches[0].clientX;mouse.y=e.touches[0].clientY;}},{passive:true});
+  resize();createNodes();drawFrame();
+
+  var counters=document.querySelectorAll('.counting');
+  var co=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        var el=e.target,target=parseInt(el.dataset.target),cur=0,step=target/40;
+        var t=setInterval(function(){cur=Math.min(cur+step,target);el.textContent=Math.round(cur)+(target===50?'':'+');if(cur>=target)clearInterval(t);},30);
+        co.unobserve(el);
+      }
+    });
+  },{threshold:.5});
+  counters.forEach(function(c){co.observe(c);});
+
+  window.addEventListener('scroll',function(){
+    document.querySelector('nav').style.borderBottomColor=window.scrollY>20?'rgba(139,92,246,.2)':'rgba(139,92,246,.08)';
+  });
+
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    a.addEventListener('click',function(e){
+      var id=a.getAttribute('href').slice(1);
+      if(!id)return;
+      var el=document.getElementById(id);
+      if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth'});}
+    });
+  });
+});
+</script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0d444a9ce55f4d599f2422af299596e1"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
